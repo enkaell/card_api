@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-SQLALCHEMY_DATABASE_URL = "postgresql://ppewkouhaiqytn:069bef344166e587e636165bad350f96d1fcd336e04e51e4e4164d0a7b8e4389" \
-                          "@ec2-63-32-248-14.eu-west-1.compute.amazonaws.com:5432/d86sv7h3k98oga"
+SQLALCHEMY_DATABASE_URL = "postgresql://bwdublpgniqwgx:663cb1616d830cb812dab169d25fd962145b6ad83006dd09cb5fb0517c07581c" \
+                          "@ec2-52-31-70-136.eu-west-1.compute.amazonaws.com:5432/dbhgbaama5ign1"
 
 db = create_engine(SQLALCHEMY_DATABASE_URL)
 try:

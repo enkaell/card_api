@@ -2,8 +2,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, APIRouter, HTTPException
 from db.models import User, session
 import uuid
+from requests import User
 from .utils import validate_password
-
+from auth.utils import validate_create_user
 router = APIRouter()
 
 
@@ -19,11 +20,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/register")
-async def register(form_data: OAuth2PasswordRequestForm = Depends()) -> object:
-    if not session.query(User).filter_by(username=form_data.username).one_or_none():
-        raise HTTPException(status_code=404, detail="Username already taken")
-    else:
-
+async def register(form_data: User = Depends()) -> object:
+    validate_create_user(form_data)
+    return {"message": "User is created"}
 # todo: /logout Token = None
 # todo: /register
 

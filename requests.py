@@ -1,18 +1,16 @@
 from pydantic import BaseModel
 from typing import Optional
-import datetime
+from pydantic import Field
 
 
 class User(BaseModel):
-    id: int
     username: str
     name: str
     surname: str
     last_name: str
-    date: datetime.date
-    sex: str
+    password: str
+    sex: str = Field(max_length=6)
     email: str
-    token: str
 
 
 class OrgUser(BaseModel):

@@ -3,7 +3,7 @@ from sqlalchemy import (Column, ForeignKey, Integer, String, Date, Identity, tex
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
-
+from requests import User as UserBase
 
 class User(Base):
     __tablename__ = "users"
@@ -13,7 +13,6 @@ class User(Base):
     password = Column(String(), nullable=False)
     surname = Column(String(), nullable=False)
     last_name = Column(String())
-    dateborn = Column(Date(), nullable=False)
     sex = Column(String(), nullable=False)
     email = Column(String(), nullable=False)
     token = Column(
@@ -24,6 +23,14 @@ class User(Base):
         index=True,
     )
     organization = relationship("Organization", secondary="org_to_users")
+
+    # def create_user(self, user_data: UserBase):
+    #     self.email = user_data.email
+    #     self.username = user_data.username
+    #     self.name = user_data.name
+    #     self.surname = user_data.surname
+    #     self.last_name = user_data.last_name
+    #     self.sex = user_data.sex
 
 
 class Organization(Base):
