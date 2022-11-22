@@ -1,27 +1,20 @@
 from db.db_init import db, Base
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import (Column, ForeignKey, Integer, String, Date, Identity, text)
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import Session
-from requests import User as UserBase
+
 
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, Identity(start=1), primary_key=True, unique=True)
-    username = Column(String(25), primary_key=True)
+    username = Column(String(25), nullable=True, unique=True)
     name = Column(String(), nullable=False)
     password = Column(String(), nullable=False)
     surname = Column(String(), nullable=False)
     last_name = Column(String())
     sex = Column(String(), nullable=False)
-    email = Column(String(), nullable=False)
-    token = Column(
-        UUID(as_uuid=False),
-        server_default=text("gen_random_uuid()"),
-        unique=True,
-        nullable=True,
-        index=True,
-    )
+    email = Column(String(), nullable=False, unique=True)
+    token = Column(String(), nullable=False)
+    refresh_token = Column(String(), nullable=False)
     organization = relationship("Organization", secondary="org_to_users")
 
     # def create_user(self, user_data: UserBase):
@@ -48,5 +41,14 @@ class OrgUser(Base):
 
 
 Base.metadata.create_all(db)
-session = Session(db)
+SessionLocal = sessionmaker(bind=db, autocommit=False)
+
+
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.commit()
+        session.close()
 # add fixtures
