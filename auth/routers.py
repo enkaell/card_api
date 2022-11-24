@@ -1,28 +1,25 @@
+from sqlalchemy.orm import Session
+from fastapi import Depends, APIRouter
+from db.models import User, get_session
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import Depends, APIRouter, HTTPException
-from db.models import User, session
-import uuid
-from requests import User
-from .utils import validate_password
-from auth.utils import validate_create_user
+from auth.utils import validate_create_user, user_login
+
 router = APIRouter()
 
 
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if user := session.query(User).filter_by(username=form_data.username).one_or_none():
-        validate_password(user, form_data.password)
-    else:
-        raise HTTPException(status_code=404, detail="Incorrect username or password")
-    user.token = uuid.uuid4().hex
-    session.commit()
-    return {"access_token": user.token, "token_type": "bearer"}
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+    auth = user_login(form_data, session)
+    headers = {"X-Access-token": auth.get("access_token"), "X-Refresh-token": auth.get('refresh_token')}
+    return JSONResponse(content={"message": "Successful login"}, headers=headers)
 
 
 @router.post("/register")
-async def register(form_data: User = Depends()) -> object:
-    validate_create_user(form_data)
-    return {"message": "User is created"}
+async def register(form_data: User, session: Session = Depends(get_session)) -> object:
+    auth = validate_create_user(form_data, session)
+    headers = {"X-Access-token": auth.get("access_token"), "X-Refresh-token": auth.get('refresh_token')}
+    return JSONResponse(content={"message": "User is created"}, headers=headers)
 # todo: /logout Token = None
 # todo: /register
 
