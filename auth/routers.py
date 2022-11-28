@@ -5,7 +5,7 @@ from db.models import get_session
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from auth.utils import validate_create_user, user_login
-
+from requests import User as UserRequest
 router = APIRouter()
 
 
@@ -17,7 +17,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Sessi
 
 
 @router.post("/register")
-async def register(form_data: User, session: Session = Depends(get_session)) -> object:
+async def register(form_data: UserRequest, session: Session = Depends(get_session)) -> object:
     auth = validate_create_user(form_data, session)
     auth.update({"message": "User is created"})
     return JSONResponse(content=auth)
