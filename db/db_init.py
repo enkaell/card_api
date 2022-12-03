@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-SQLALCHEMY_DATABASE_URL = "postgresql://admin:admin@api-db1:5432/api"
-db = create_engine(SQLALCHEMY_DATABASE_URL)
+import os
+db = create_engine(os.environ['DB_URL'])
 try:
     db.connect()
 except Exception as e:
