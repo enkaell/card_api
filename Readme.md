@@ -1,8 +1,8 @@
 # Startup config
- sudo docker-compose -f docker-compose.yml down -v &&  sudo docker-compose -f docker-compose.yml up -d
+ Сначала вводим команды
  
- ## Убить контейнеры
- docker-compose -f docker-compose.yml down -v
+ ## Собрать контейнер (только для первого запуска и в директории проекта)
+ docker build . -t 'api'
   
-  ## Поднять контейнеры
-  docker-compose -f docker-compose.yml up -d
+  ## Поднять контейнер (из любого места)
+  docker run -d 'api'

@@ -68,4 +68,12 @@ def get_user_profile(token: str, session: Session):
     if user := session.query(UserModel).filter_by(token=token).one_or_none():
         return User(username=user.username, name=user.name, surname=user.surname,
                     last_name=user.name, sex=user.sex, email=user.email, password=user.password)
-    raise HTTPException(status_code=404, detail="Not found")
+    raise HTTPException(status_code=404, detail="Not authorized")
+
+
+def remove_token(token: str, session: Session):
+    user = session.query(UserModel).filter_by(token=token).one_or_none()
+    user.token = ''
+    user.refresh_token = ''
+    session.add(user)
+    return {'status': 'OK'}
