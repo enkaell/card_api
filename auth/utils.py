@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440
@@ -40,7 +39,7 @@ def user_login(form_data: OAuth2PasswordRequestForm, session: Session):
     if user := session.query(UserModel).filter_by(username=form_data.username).one_or_none():
         validate_password(user, form_data.password)
     else:
-        raise HTTPException(status_code=404, detail="Incorrect username or password")
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
     return {'access_token': user.token, 'refresh_token': user.refresh_token, 'token_type': 'bearer'}
 
 
@@ -58,8 +57,15 @@ def validate_create_user(user: User, session: Session):
         'sex': user.sex, 'email': user.email,
         'password': get_password_hash(user.password),
         'token': create_token(data={'sub': user.username}),
-        'refresh_token': create_token(data={'sub': user.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES*7)
+        'refresh_token': create_token(data={'sub': user.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES * 7)
     }
 
     session.add(UserModel(**data))
     return {'access_token': data['token'], 'refresh_token': data['refresh_token'], 'token_type': 'bearer'}
+
+
+def get_user_profile(token: str, session: Session):
+    if user := session.query(UserModel).filter_by(token=token).one_or_none():
+        return User(username=user.username, name=user.name, surname=user.surname,
+                    last_name=user.name, sex=user.sex, email=user.email, password=user.password)
+    raise HTTPException(status_code=404, detail="Not found")
