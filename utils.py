@@ -2,6 +2,7 @@ from typing import Union
 from requests import User
 from jose import jwt
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from email_validate import validate
 from models import User as UserModel
 from passlib.context import CryptContext
@@ -36,8 +37,14 @@ def validate_password(user: User, password: str):
 
 
 def user_login(form_data: OAuth2PasswordRequestForm, session: Session):
-    if user := session.query(UserModel).filter_by(username=form_data.username).one_or_none():
+    if user := session.query(UserModel).filter(
+            or_(UserModel.username == form_data.username, UserModel.username == form_data.username)).one_or_none():
         validate_password(user, form_data.password)
+        token = create_token(data={'sub': user.username}),
+        refresh_token = create_token(data={'sub': user.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES * 7)
+        user.refresh_token = refresh_token
+        user.token = token
+        session.add(user)
     else:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     return {'access_token': user.token, 'refresh_token': user.refresh_token, 'token_type': 'bearer'}
@@ -77,3 +84,4 @@ def remove_token(token: str, session: Session):
     user.refresh_token = ''
     session.add(user)
     return {'status': 'OK'}
+
