@@ -1,6 +1,6 @@
-from db.db_init import db, Base
+from db_init import db, Base
 from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import (Column, ForeignKey, Integer, String, Date, Identity, text)
+from sqlalchemy import (Column, ForeignKey, Integer, String, Identity)
 
 
 class User(Base):
