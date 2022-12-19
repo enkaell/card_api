@@ -7,17 +7,8 @@ from utils import validate_create_user, user_login, get_user_profile, remove_tok
 from requests import User as UserRequest
 from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://test2901.herokuapp.com/"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
 
