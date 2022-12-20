@@ -1,18 +1,18 @@
+from fastapi import FastAPI
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
-from models import get_session
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
-from utils import validate_create_user, user_login, get_user_profile, remove_token
-from requests import User as UserRequest
-from fastapi import FastAPI
+from core.schemas.schema import User, Event
+from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
+from core.events.service import add_event, read_events
+from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
+
 
 app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 router = APIRouter()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 @router.post("/login")
@@ -23,7 +23,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Sessi
 
 
 @router.post("/register")
-async def register(form_data: UserRequest, session: Session = Depends(get_session)) -> object:
+async def register(form_data: User, session: Session = Depends(get_session)) -> object:
     auth = validate_create_user(form_data, session)
     auth.update({"message": "User is created"})
     return JSONResponse(content=auth)
@@ -34,8 +34,18 @@ async def logout(token: str = Depends(oauth2_scheme), session: Session = Depends
     return remove_token(token, session)
 
 
-@router.get("/profile")
+@router.get("/profile", response_model=User)
 async def get_profile(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     return get_user_profile(token, session)
+
+
+@router.post('/events/create')
+async def create_event(event: Event, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return add_event(user=token, session=session, event=event)
+
+
+@router.get('/events')
+async def get_events(session: Session = Depends(get_session)):
+    return read_events(session)
 
 app.include_router(router)

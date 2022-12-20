@@ -1,8 +1,10 @@
-from fastapi import FastAPI
-from fastapi.security import OAuth2PasswordBearer
+import uvicorn
 import routers
+from fastapi import FastAPI
 
 app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = routers.oauth2_scheme
 app.include_router(routers.router)
 
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
