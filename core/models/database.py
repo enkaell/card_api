@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Identity, Date, Time
 
 
 TEST_SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/test'
-# SQLALCHEMY_DATABASE_URL='postgresql://tudiejmswmvniv:44741b912599936be0d58e6f87ef2438d9a04bf8c2d5a6de856b36b173e2d8dc@ec2-52-18-116-67.eu-west-1.compute.amazonaws.com:5432/d239biaa93na6a'
+SQLALCHEMY_DATABASE_URL='postgresql://tudiejmswmvniv:44741b912599936be0d58e6f87ef2438d9a04bf8c2d5a6de856b36b173e2d8dc@ec2-52-18-116-67.eu-west-1.compute.amazonaws.com:5432/d239biaa93na6a'
 
 
 Base = declarative_base()
@@ -54,7 +54,7 @@ class EventTable(Base):
 
 
 try:
-    db = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
+    db = create_engine(SQLALCHEMY_DATABASE_URL)
     Base.metadata.create_all(db)
     SessionLocal = sessionmaker(bind=db, autocommit=False)
     db.connect()

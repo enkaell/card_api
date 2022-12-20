@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
@@ -44,7 +45,7 @@ async def create_event(event: Event, token: str = Depends(oauth2_scheme), sessio
     return add_event(user=token, session=session, event=event)
 
 
-@router.get('/events')
+@router.get('/events', response_model=List[Event])
 async def get_events(session: Session = Depends(get_session)):
     return read_events(session)
 
