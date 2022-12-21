@@ -14,11 +14,22 @@ class User(BaseModel):
 
 
 class OrgUser(BaseModel):
-    id: int
+    id: Optional[int]
     org_id: Optional[int]
     user_id: int
 
 
 class Organization(BaseModel):
-    id: int
+    id: Optional[int]
     name: str
+
+
+class Event(BaseModel):
+    id: Optional[int]
+    title: str
+    date: str
+    count_people: int
+    start_time: str
+    address: Optional[str]
+    icon_id: Optional[str]
+    owner: Optional[int]

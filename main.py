@@ -1,9 +1,18 @@
 import uvicorn
+import routers
 from fastapi import FastAPI
-from fastapi.security import OAuth2PasswordBearer
-from auth import routers
+from fastapi.middleware.cors import CORSMiddleware
+
+
 app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+oauth2_scheme = routers.oauth2_scheme
 app.include_router(routers.router)
 
 if __name__ == "__main__":
