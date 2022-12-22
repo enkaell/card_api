@@ -1,3 +1,4 @@
+import uvicorn
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
 from models import get_session
@@ -12,12 +13,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://localhost:8000",
-    "http://localhost:3002"
+    "http://localhost/",
+    "http://localhost:8080/",
+    "http://localhost:8000/",
+    "http://localhost:3004/"
 ]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=[""],
+    allow_headers=[""],
+)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
 
@@ -46,3 +54,5 @@ async def get_profile(token: str = Depends(oauth2_scheme), session: Session = De
     return get_user_profile(token, session)
 
 app.include_router(router)
+if __name__ == "main":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
