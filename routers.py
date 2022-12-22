@@ -12,11 +12,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 origins = [
-    "http://localhost/",
-    "http://localhost:8080/",
-    "http://localhost:8000/",
-    "http://localhost:3004/"
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:8000",
+    "http://localhost:3004"
 ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=[""],
+    allow_headers=[""],
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
@@ -49,5 +57,6 @@ async def get_profile(token: str = Depends(oauth2_scheme), session: Session = De
 app.include_router(router)
 
 import uvicorn
+
 if __name__ == "__main__":
     uvicorn.run(app)
