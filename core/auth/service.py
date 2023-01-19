@@ -53,7 +53,7 @@ def user_login(form_data: OAuth2PasswordRequestForm, session: Session):
 def validate_create_user(user: User, session: Session):
     if session.query(UserTable).filter_by(username=user.username).one_or_none():
         raise HTTPException(status_code=400, detail="Username already taken")
-    if not validate(email_address=user.email, check_blacklist=False):
+    if not validate(email_address=user.email, check_blacklist=False) or not validate(email_address=user.email, check_blacklist=False):
         raise HTTPException(status_code=400, detail="Invalid email")
 
     data = user.dict()
