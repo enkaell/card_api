@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Identity, Date, Time
 
 
-TEST_SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:postgres@192.168.0.102:3333/project'
+TEST_SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:postgres@192.168.0.101:3333/project'
 SQLALCHEMY_DATABASE_URL='postgresql://tudiejmswmvniv:44741b912599936be0d58e6f87ef2438d9a04bf8c2d5a6de856b36b173e2d8dc@ec2-52-18-116-67.eu-west-1.compute.amazonaws.com:5432/d239biaa93na6a'
 db = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(bind=db, autocommit=False)
