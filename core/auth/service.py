@@ -69,8 +69,7 @@ def validate_create_user(user: User, session: Session):
 
 def get_user_profile(token: str, session: Session):
     if user := session.query(UserTable).filter_by(token=token).one_or_none():
-        return User(id=user.id, username=user.username, name=user.name, surname=user.surname,
-                    last_name=user.name, sex=user.sex, email=user.email, password=user.password)
+        return User(**user.dict())
     raise HTTPException(status_code=404, detail="Not authorized")
 
 

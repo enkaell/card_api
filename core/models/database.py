@@ -27,6 +27,15 @@ class UserTable(Base):
     refresh_token = Column(String(), nullable=False)
     organization = relationship("OrganizationTable", secondary="org_to_users")
 
+    def dict(self):
+        return {
+            rec.name: getattr(self, rec.name)
+            if not isinstance(getattr(self, rec.name), datetime.date)
+               and not isinstance(getattr(self, rec.name), datetime.time)
+            else str(getattr(self, rec.name))
+            for rec in self.__table__.columns
+        }
+
 
 class OrganizationTable(Base):
     __tablename__ = "organizations"
@@ -52,13 +61,13 @@ class EventTable(Base):
     address = Column(String)
     icon_id = Column(String)
     owner = Column(Integer, ForeignKey("users.id"))
-    # tags = Column()
+    tags = Column(ARRAY(String))
 
     def dict(self):
         return {
             rec.name: getattr(self, rec.name)
             if not isinstance(getattr(self, rec.name), datetime.date)
-            and not isinstance(getattr(self, rec.name), datetime.time)
+               and not isinstance(getattr(self, rec.name), datetime.time)
             else str(getattr(self, rec.name))
             for rec in self.__table__.columns
         }

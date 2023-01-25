@@ -4,6 +4,7 @@ from pydantic import Field
 
 
 class User(BaseModel):
+    id: Optional[int]
     username: str
     name: str
     surname: str
@@ -33,3 +34,4 @@ class Event(BaseModel):
     address: Optional[str]
     icon_id: Optional[str]
     owner: Optional[int]
+    tags: Optional[list]
