@@ -8,10 +8,6 @@ class FrontTag(BaseModel):
     name: str
 
 
-class BackTag(BaseModel):
-    id: int
-
-
 class CreateUser(BaseModel):
     username: str
     name: str
@@ -80,4 +76,10 @@ class Event(BaseModel):
     address: Optional[str]
     icon_id: Optional[str]
     owner: int
-    tags: Optional[list]
+    tags: Optional[List[int]]
+
+
+class Set(BaseModel):
+    id: int
+    name: str
+    event_count: int

@@ -7,10 +7,8 @@ from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import OAuth2PasswordRequestForm
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
-from core.schemas.schema import User, CreateUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag
-from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags
-
-
+from core.schemas.schema import User, CreateUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag, Set
+from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags, read_sets
 
 
 app = FastAPI()
@@ -70,6 +68,11 @@ async def get_my_events(token: str = Depends(oauth2_scheme), session: Session = 
 @router.get('/tags', response_model=List[FrontTag], tags=['events'])
 async def get_tags():
     return [FrontTag(id=value, name=key) for key, value in map_tags.items()]
+
+
+@router.get('/sets', response_model=List[Set], tags=['events'])
+async def get_sets(session: Session = Depends(get_session)):
+    return read_sets(session)
 
 
 app.include_router(router)

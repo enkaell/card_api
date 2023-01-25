@@ -1,10 +1,11 @@
+import json
 from fastapi import HTTPException
 from core.auth import check_token
 from sqlalchemy.orm import Session
 from core.models.database import EventTable
 from sqlalchemy import select, delete, update
 from sqlalchemy.dialects.postgresql import insert
-from core.schemas.schema import Event, CreateEvent, UpdateEvent, DeleteEvent
+from core.schemas.schema import Event, CreateEvent, UpdateEvent, DeleteEvent, Set
 
 
 map_tags = {
@@ -82,3 +83,42 @@ def read_events(session: Session, *args, **kwargs):
 @check_token
 def read_my_events(user: int, session: Session):
     return [Event(**rec.dict()) for rec in session.query(EventTable).filter(EventTable.owner == user).all()]
+
+
+def read_sets(session: Session):
+    rs = json.dumps([{'@Id': value, "name": key} for key, value in map_tags.items()], default=str)
+    return [Set(**row._mapping) for row in session.execute(f"""
+                WITH mat_data as (
+                    SELECT
+                        "@Id"
+                    ,   "name"
+                    ,   True as "event"
+                    FROM 
+                        jsonb_to_recordset('{rs}'::jsonb) as md(
+                            "@Id" smallint
+                        ,   "name" text
+                        )
+                    JOIN
+                        events on md."@Id" = ANY(events.tags)
+                )
+                , event_count as (
+                    SELECT
+                        mat_data."@Id"
+                    ,   COUNT(*) as "event_count"
+                    FROM
+                        mat_data
+                    GROUP BY 
+                        mat_data."@Id"
+                )
+                SELECT DISTINCT
+                    event_count."@Id" as "id"
+                ,   mat_data."name"
+                ,   event_count."event_count"
+                FROM
+                    event_count
+                JOIN
+                    mat_data on event_count."@Id" = mat_data."@Id"
+                ORDER BY 
+                    event_count."event_count" desc
+                ,   event_count."@Id" asc
+            """).all()]
