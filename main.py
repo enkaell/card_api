@@ -3,13 +3,23 @@ import routers
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+tags_metadata = [
+    {
+        "name": "account",
+        "description": "Операции с аккаунтом",
+    },
+    {
+        "name": "events",
+        "description": "Операции с событиями",
+    },
+]
 
 origins = ["*"]
-app = FastAPI()
+app = FastAPI(openapi_tags=tags_metadata)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["POST", "PUT", "GET", "DELETE"],
     allow_headers=["*"]
 )

@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-from core.models.database import SQLALCHEMY_DATABASE_URL, Base
+from core.models.database import TEST_SQLALCHEMY_DATABASE_URL, Base
 from core.models.database import UserTable, OrganizationTable, OrgUserTable, EventTable
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -38,7 +38,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = SQLALCHEMY_DATABASE_URL
+    url = TEST_SQLALCHEMY_DATABASE_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,

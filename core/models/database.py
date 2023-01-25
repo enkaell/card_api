@@ -1,4 +1,6 @@
+import datetime
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Identity, Date, Time
@@ -51,6 +53,15 @@ class EventTable(Base):
     icon_id = Column(String)
     owner = Column(Integer, ForeignKey("users.id"))
     # tags = Column()
+
+    def dict(self):
+        return {
+            rec.name: getattr(self, rec.name)
+            if not isinstance(getattr(self, rec.name), datetime.date)
+            and not isinstance(getattr(self, rec.name), datetime.time)
+            else str(getattr(self, rec.name))
+            for rec in self.__table__.columns
+        }
 
 
 try:
