@@ -7,6 +7,29 @@ from sqlalchemy.dialects.postgresql import insert
 from core.schemas.schema import Event, CreateEvent, UpdateEvent, DeleteEvent
 
 
+map_tags = {
+    'Спорт': 0,
+    'Музыка': 1,
+    'Учеба': 2,
+    'Наука': 3,
+    'Развлечения': 4,
+    'Соревнования': 5,
+    'Олимпиада': 6,
+    'Программирование': 7,
+    'Праздник': 8,
+    'Культура и искусство': 9,
+    'Творчество': 10,
+    'Университетское': 11,
+    'Мастеркласс': 12,
+    'Cтажировка': 13,
+    'Волонтер': 14,
+    'Медиа': 15,
+    'Туризм': 16,
+    'Медицина': 17,
+    'Кино': 18
+}
+
+
 @check_token
 def add_event(user: int, session: Session, event: CreateEvent):
     event.owner = user

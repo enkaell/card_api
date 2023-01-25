@@ -1,6 +1,15 @@
-from pydantic import BaseModel
-from typing import Optional
 from pydantic import Field
+from pydantic import BaseModel
+from typing import Optional, List
+
+
+class FrontTag(BaseModel):
+    id: int
+    name: str
+
+
+class BackTag(BaseModel):
+    id: int
 
 
 class CreateUser(BaseModel):
@@ -42,7 +51,7 @@ class CreateEvent(BaseModel):
     start_time: str
     address: Optional[str]
     icon_id: Optional[str]
-    tags: Optional[list]
+    tags: Optional[BackTag]
     owner: Optional[int]
 
 
