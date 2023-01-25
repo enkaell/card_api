@@ -69,14 +69,126 @@ def delete_event(user: int, session: Session, event: DeleteEvent):
     return {'status': 'OK', 'event_id': event.id}
 
 
+def get_params(key: list):
+    if len(key) == 2:
+        param1, param2 = key
+    else:
+        param1, param2 = key[0], None
+    return param1, param2
+
+
 def read_events(session: Session, *args, **kwargs):
     id = kwargs.get('id')
+
     if id:
         result = session.query(EventTable).get(id)
         if result:
             return [Event(**result.dict())]
         else:
             raise HTTPException(status_code=404, detail="Not found")
+
+    else:
+        tags = kwargs.get('tags')
+        title = kwargs.get('title')
+        owner = kwargs.get('owner')
+        start_time = kwargs.get('start_time')
+        date = kwargs.get('date')
+        count_people = kwargs.get('count_people')
+        sort = kwargs.get('sort')
+        filters = []
+
+        if tags:
+            filters.append(f"""
+                events."tags" && ARRAY{tags}::smallint[]
+            """)
+
+        if title:
+            filters.append(f"""
+                events."title" ILIKE '%{title}%'
+            """)
+
+        if owner:
+            filters.append(f"""
+                events."owner" = ANY(ARRAY{owner}::int[])
+            """)
+
+        if start_time:
+            start_from, start_to = get_params(start_time)
+
+            if start_to:
+                filters.append(f"""
+                    events."start_time" >= '{str(start_from)}'::time and 
+                    events."start_time" <= '{str(start_to)}'::time  
+                """)
+            else:
+                filters.append(f"""
+                    events."start_time" = '{str(start_from)}'::time  
+                """)
+
+        if date:
+            date_from, date_to = get_params(date)
+
+            if date_to:
+                filters.append(f"""
+                    events."date" >= '{str(date_from)}'::date and 
+                    events."date" <= '{str(date_to)}'::date 
+                """)
+            else:
+                filters.append(f"""
+                    events."date" = '{str(date_from)}'::date
+                """)
+
+        if count_people:
+            count_people_from, count_people_to = get_params(count_people)
+
+            if count_people_to:
+                filters.append(f"""
+                    events."count_people" >= {count_people_from} and 
+                    events."count_people" <= {count_people_to} 
+                """)
+            else:
+                filters.append(f"""
+                    events."count_people" = {count_people_from} 
+                """)
+
+        query = """
+            SELECT 
+                id
+            ,   title
+            ,   date::text
+            ,   count_people
+            ,   start_time::text
+            ,   address
+            ,   icon_id
+            ,   owner
+            ,   tags 
+            FROM 
+                events 
+        """
+        execute = False
+
+        if filters:
+            execute = True
+            query += "WHERE "
+            iterations = len(filters)
+            for i in range(iterations):
+                query += filters[i]
+                if i != iterations - 1:
+                    query += "and "
+
+        if sort:
+            execute = True
+            sort = sort.split('|')
+            if len(sort) == 2:
+                column, order = sort
+            else:
+                column, order = sort[0], 'asc'
+            query += f"ORDER BY {column} {order}"
+
+        if execute:
+            print(query)
+            return [Event(**rec._mapping) for rec in session.execute(query).all()]
+
     return [Event(**rec.dict()) for rec in session.query(EventTable).all()]
 
 

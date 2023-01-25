@@ -79,6 +79,16 @@ class Event(BaseModel):
     tags: Optional[List[int]]
 
 
+class FindEvent(BaseModel):
+    title: Optional[str]
+    date: Optional[List[str]]
+    count_people: Optional[List[int]]
+    start_time: Optional[List[str]]
+    owner: Optional[List[str]]
+    tags: Optional[List[int]]
+    sort: Optional[str]
+
+
 class Set(BaseModel):
     id: int
     name: str
