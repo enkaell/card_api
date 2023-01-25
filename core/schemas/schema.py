@@ -51,7 +51,7 @@ class CreateEvent(BaseModel):
     start_time: str
     address: Optional[str]
     icon_id: Optional[str]
-    tags: Optional[BackTag]
+    tags: Optional[List[int]]
     owner: Optional[int]
 
 
@@ -64,7 +64,7 @@ class UpdateEvent(BaseModel):
     address: Optional[str]
     icon_id: Optional[str]
     owner: Optional[int]
-    tags: Optional[list]
+    tags: Optional[List[int]]
 
 
 class DeleteEvent(BaseModel):

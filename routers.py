@@ -7,8 +7,8 @@ from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import OAuth2PasswordRequestForm
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
+from core.schemas.schema import User, CreateUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag
 from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags
-from core.schemas.schema import User, CreateUser, Event, CreateEvent, UpdateEvent, DeleteEvent, BackTag, FrontTag
 
 
 
