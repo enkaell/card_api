@@ -1,20 +1,48 @@
-from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from core.auth import check_token
-from core.schemas.schema import Event
+from sqlalchemy.orm import Session
 from core.models.database import EventTable
+from sqlalchemy import select, delete, update
+from sqlalchemy.dialects.postgresql import insert
+from core.schemas.schema import Event, CreateEvent, UpdateEvent, DeleteEvent
 
 
 @check_token
-def add_event(user: int, session: Session, event: Event):
+def add_event(user: int, session: Session, event: CreateEvent):
+    event.owner = user
+    stmt_create = insert(EventTable).values(event.dict()).returning(EventTable)
+    stmt_select = select(EventTable).from_statement(stmt_create)
+    id = session.execute(stmt_select).scalar().id
+    return {'status': 'OK', 'event_id': id}
+
+
+@check_token
+def change_event(user: int, session: Session, event: UpdateEvent):
     event.owner = user
     if event.id:
-        obj_for_update = session.query(EventTable).get(event.id)
-        for key in event:
-            setattr(obj_for_update, key[0], getattr(event, key[0]))
-        id = session.add(obj_for_update)
+        if session.query(EventTable).get(event.id):
+            event_dict = event.dict()
+            event_dict = {key: event_dict[key] for key in event_dict if event_dict[key]}
+            stmt_update = update(EventTable).where(EventTable.id==event.id).values(event_dict).returning(EventTable)
+            stmt_select = select(EventTable).from_statement(stmt_update)
+            id = session.execute(stmt_select).scalar().id
+            return {'status': 'OK', 'event_id': id}
+        else:
+            raise HTTPException(status_code=404, detail="Not found")
     else:
-        id = session.add(EventTable(**event.dict()))
-    return {'status': 'OK', 'event_id': id}
+        raise HTTPException(status_code=404, detail="Not found")
+
+
+@check_token
+def delete_event(user: int, session: Session, event: DeleteEvent):
+    if exist_event := session.query(EventTable).get(event.id):
+        if exist_event.owner == user:
+            session.execute(delete(EventTable).where(EventTable.id == event.id))
+        else:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+    else:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {'status': 'OK', 'event_id': event.id}
 
 
 def read_events(session: Session, *args, **kwargs):
@@ -24,11 +52,10 @@ def read_events(session: Session, *args, **kwargs):
         if result:
             return [Event(**result.dict())]
         else:
-            return []
+            raise HTTPException(status_code=404, detail="Not found")
     return [Event(**rec.dict()) for rec in session.query(EventTable).all()]
 
 
 @check_token
 def read_my_events(user: int, session: Session):
     return [Event(**rec.dict()) for rec in session.query(EventTable).filter(EventTable.owner == user).all()]
-

@@ -3,12 +3,12 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
-from core.schemas.schema import User, Event
 from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import OAuth2PasswordRequestForm
-from core.events.service import add_event, read_events, read_my_events
+from core.schemas.schema import User, CreateUser, Event, CreateEvent, UpdateEvent, DeleteEvent
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
+from core.events.service import add_event, read_events, read_my_events, change_event, delete_event
 
 
 app = FastAPI()
@@ -24,7 +24,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Sessi
 
 
 @router.post("/register", tags=['account'])
-async def register(form_data: User, session: Session = Depends(get_session)) -> object:
+async def register(form_data: CreateUser, session: Session = Depends(get_session)) -> object:
     auth = validate_create_user(form_data, session)
     auth.update({"message": "User is created"})
     return JSONResponse(content=auth)
@@ -40,9 +40,19 @@ async def get_profile(token: str = Depends(oauth2_scheme), session: Session = De
     return get_user_profile(token, session)
 
 
-@router.post('/events/upsert', tags=['events'])
-async def create_event(event: Event, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+@router.post('/events/create', tags=['events'])
+async def create_event(event: CreateEvent, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     return add_event(user=token, session=session, event=event)
+
+
+@router.post('/events/update', tags=['events'])
+async def update_event(event: UpdateEvent, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return change_event(user=token, session=session, event=event)
+
+
+@router.post('/events/delete', tags=['events'])
+async def remove_event(event: DeleteEvent, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return delete_event(user=token, session=session, event=event)
 
 
 @router.get('/events', response_model=List[Event], tags=['events'])

@@ -1,13 +1,13 @@
 from jose import jwt
 from typing import Union
 from sqlalchemy import or_
-from core.schemas.schema import User
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from email_validate import validate
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from core.models.database import UserTable
+from core.schemas.schema import User, CreateUser
 from fastapi.security import OAuth2PasswordRequestForm
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -31,7 +31,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def validate_password(user: User, password: str):
+def validate_password(user: CreateUser, password: str):
     if not pwd_context.verify(password, user.password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
@@ -50,7 +50,7 @@ def user_login(form_data: OAuth2PasswordRequestForm, session: Session):
     return {'access_token': user.token, 'refresh_token': user.refresh_token, 'token_type': 'bearer'}
 
 
-def validate_create_user(user: User, session: Session):
+def validate_create_user(user: CreateUser, session: Session):
     if session.query(UserTable).filter(or_(UserTable.username==user.username, UserTable.email==user.email)).one_or_none():
         raise HTTPException(status_code=400, detail="Username or email already taken")
     if not validate(email_address=user.email, check_blacklist=False) or not validate(email_address=user.email, check_blacklist=False):
