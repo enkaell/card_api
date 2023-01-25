@@ -61,7 +61,7 @@ class EventTable(Base):
     address = Column(String)
     icon_id = Column(String)
     owner = Column(Integer, ForeignKey("users.id"))
-    tags = Column(ARRAY(String))
+    tags = Column(ARRAY(Integer))
 
     def dict(self):
         return {
