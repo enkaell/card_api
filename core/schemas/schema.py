@@ -27,6 +27,15 @@ class User(BaseModel):
     password: str
     sex: str = Field(max_length=6)
     email: str
+    icon_id: Optional[str]
+
+
+class UpdateUser(BaseModel):
+    name: Optional[str]
+    surname: Optional[str]
+    last_name: Optional[str]
+    sex: Optional[str]
+    icon_id: Optional[str]
 
 
 class LoginUser(BaseModel):
@@ -129,6 +138,7 @@ class UserWithEvents(BaseModel):
     last_name: str
     sex: str
     email: str
+    icon_id: Optional[str]
     events: AllUserEvent
 
 

@@ -6,9 +6,9 @@ from fastapi.responses import JSONResponse
 from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
 # from fastapi.security import OAuth2PasswordRequestForm
-from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
+from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token, update_profile
 from core.schemas.schema import User, CreateUser, LoginUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag, \
-    Set, FindEvent, UserWithEvents, AllUserEvent, FrontComment
+    Set, FindEvent, UserWithEvents, AllUserEvent, FrontComment, UpdateUser
 from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags, read_sets, \
     like_dislike_event, join_event, read_user, write_comment
 
@@ -42,6 +42,11 @@ async def logout(token: str = Depends(oauth2_scheme), session: Session = Depends
 @router.get("/profile", response_model=User, tags=['account'])
 async def get_profile(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     return get_user_profile(token, session)
+
+
+@router.post('/profile/change', tags=['account'])
+async def change_profile(update_user: UpdateUser, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return update_profile(user=token, update_user=update_user, session=session)
 
 
 @router.get('/user', response_model=UserWithEvents, tags=['other user'])

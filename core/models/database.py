@@ -25,6 +25,7 @@ class UserTable(Base):
     email = Column(String(), nullable=False, unique=True)
     token = Column(String(), nullable=False)
     refresh_token = Column(String(), nullable=False)
+    icon_id = Column(String())
     organization = relationship("OrganizationTable", secondary="org_to_users")
 
     def dict(self):

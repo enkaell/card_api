@@ -7,12 +7,26 @@ from email_validate import validate
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from core.models.database import UserTable
-from core.schemas.schema import User, CreateUser, LoginUser
+from core.schemas.schema import User, CreateUser, LoginUser, UpdateUser
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def check_token(func):
+    """
+    Декоратор для проверки токена
+    """
+    def _check(*args, **kwargs):
+        if user := kwargs.get('session').query(UserTable).filter_by(token=kwargs.get('user')).one_or_none():
+            kwargs.update({'user': user.id})
+            return func(*args, **kwargs)
+        else:
+            raise HTTPException(status_code=404, detail="Not authorized")
+
+    return _check
 
 
 def create_token(data: dict, expires_delta: Union[timedelta, None] = None):
@@ -80,15 +94,22 @@ def remove_token(token: str, session: Session):
     return {'status': 'OK'}
 
 
-def check_token(func):
-    """
-    Декоратор для проверки токена
-    """
-    def _check(*args, **kwargs):
-        if user := kwargs.get('session').query(UserTable).filter_by(token=kwargs.get('user')).one_or_none():
-            kwargs.update({'user': user.id})
-            return func(*args, **kwargs)
-        else:
-            raise HTTPException(status_code=404, detail="Not authorized")
-
-    return _check
+@check_token
+def update_profile(user: int, update_user: UpdateUser, session: Session):
+    update_user = update_user.dict()
+    where_query = f"""id = '{user} '"""
+    params_query = ''
+    for key in update_user:
+        if params_query:
+            params_query += ', '
+        if update_user[key]:
+            params_query += f"""{key} = '{update_user[key]}'"""
+    session.execute(f"""
+        UPDATE
+            users
+        SET
+            {params_query}
+        WHERE
+            {where_query}
+    """)
+    return {'status': 'OK', 'id': user}
