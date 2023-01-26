@@ -361,10 +361,11 @@ def write_comment(user: int, comment: FrontComment, session: Session):
         SET
             comments = CASE
                             WHEN comments is null then
-                                ARRAY[ARRAY[{str(user.username)}, {str(comment.comment)}]]
+                                ARRAY[ARRAY['{user.username}',  '{comment.comment}']]
                             ELSE
-                                comments = array_cat(comments, ARRAY[ARRAY[{str(user.username)}, {str(comment.comment)}]])
+                                array_cat(comments,  ARRAY[ARRAY['{user.username}',  '{comment.comment}']])
+                        END
         WHERE
             id = {comment.event_id}
     """)
-    return {'status': 'OK', 'event_id': id}
+    return {'status': 'OK', 'event_id': comment.event_id}
