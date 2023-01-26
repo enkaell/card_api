@@ -47,6 +47,7 @@ class Organization(BaseModel):
 
 class CreateEvent(BaseModel):
     title: str
+    description: Optional[str]
     date: str
     count_people: int
     start_time: str
@@ -59,6 +60,7 @@ class CreateEvent(BaseModel):
 class UpdateEvent(BaseModel):
     id: int
     title: Optional[str]
+    description: Optional[str]
     date: Optional[str]
     count_people: Optional[int]
     start_time: Optional[str]
@@ -75,6 +77,7 @@ class DeleteEvent(BaseModel):
 class Event(BaseModel):
     id: int
     title: str
+    description: Optional[str]
     date: str
     count_people: int
     start_time: str
@@ -82,10 +85,14 @@ class Event(BaseModel):
     icon_id: Optional[str]
     owner: int
     tags: Optional[List[int]]
+    likes: Optional[List[int]]
+    dislikes: Optional[List[int]]
+    can_join: bool
 
 
 class FindEvent(BaseModel):
     title: Optional[str]
+    description: Optional[str]
     date: Optional[List[str]]
     count_people: Optional[List[int]]
     start_time: Optional[List[str]]
@@ -98,3 +105,8 @@ class Set(BaseModel):
     id: int
     name: str
     event_count: int
+
+
+class JoinEvent(BaseModel):
+    id: int
+

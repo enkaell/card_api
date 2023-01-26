@@ -55,6 +55,7 @@ class EventTable(Base):
     __tablename__ = "events"
     id = Column(Integer, Identity(start=1), primary_key=True)
     title = Column(String, nullable=False)
+    description = Column(String)
     date = Column(Date, nullable=False)
     count_people = Column(Integer, nullable=False)
     start_time = Column(Time, nullable=False)
@@ -62,6 +63,9 @@ class EventTable(Base):
     icon_id = Column(String)
     owner = Column(Integer, ForeignKey("users.id"))
     tags = Column(ARRAY(Integer))
+    likes = Column(Integer, default=0)
+    dislikes = Column(Integer, default=0)
+    members = Column(ARRAY(Integer), default=[])
 
     def dict(self):
         return {

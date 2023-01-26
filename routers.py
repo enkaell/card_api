@@ -7,9 +7,10 @@ from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
 # from fastapi.security import OAuth2PasswordRequestForm
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
-from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags, read_sets
 from core.schemas.schema import User, CreateUser, LoginUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag, \
     Set, FindEvent
+from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags, read_sets, \
+    like_dislike_event, join_event
 
 
 app = FastAPI()
@@ -81,6 +82,21 @@ async def get_tags():
 @router.get('/sets', response_model=List[Set], tags=['events'])
 async def get_sets(session: Session = Depends(get_session)):
     return read_sets(session)
+
+
+@router.post('/like', tags=['events'])
+async def like_event(id: int, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return like_dislike_event(user=token, id=id, action='like', session=session)
+
+
+@router.post('/dislike', tags=['events'])
+async def dislike_event(id: int, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return like_dislike_event(user=token, id=id, action='dislike', session=session)
+
+
+@router.post('/join', tags=['events'])
+async def join(id: int, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return join_event(user=token, id=id, session=session)
 
 
 app.include_router(router)

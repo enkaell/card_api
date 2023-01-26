@@ -31,6 +31,26 @@ map_tags = {
 }
 
 
+def get_template():
+    return """
+        SELECT 
+            id
+        ,   title
+        ,   description
+        ,   date::text
+        ,   count_people
+        ,   start_time::text
+        ,   address
+        ,   icon_id
+        ,   owner
+        ,   tags
+        ,   members
+        ,   (count_peple > array_length("members")) as "can_join"
+        FROM 
+           events 
+    """
+
+
 @check_token
 def add_event(user: int, session: Session, event: CreateEvent):
     event.owner = user
@@ -79,11 +99,12 @@ def get_params(key: list):
 
 def read_events(session: Session, *args, **kwargs):
     id = kwargs.get('id')
-
+    query = get_template()
     if id:
-        result = session.query(EventTable).get(id)
+        query += f"""WHERE events."id" = {id}"""
+        result = [Event(**rec._mapping) for rec in session.execute(query).all()]
         if result:
-            return [Event(**result.dict())]
+            return result
         else:
             raise HTTPException(status_code=404, detail="Not found")
 
@@ -151,24 +172,7 @@ def read_events(session: Session, *args, **kwargs):
                     events."count_people" = {count_people_from} 
                 """)
 
-        query = """
-            SELECT 
-                id
-            ,   title
-            ,   date::text
-            ,   count_people
-            ,   start_time::text
-            ,   address
-            ,   icon_id
-            ,   owner
-            ,   tags 
-            FROM 
-                events 
-        """
-        execute = False
-
         if filters:
-            execute = True
             query += "WHERE "
             iterations = len(filters)
             for i in range(iterations):
@@ -177,7 +181,6 @@ def read_events(session: Session, *args, **kwargs):
                     query += "and "
 
         if sort:
-            execute = True
             sort = sort.split('|')
             if len(sort) == 2:
                 column, order = sort
@@ -185,16 +188,14 @@ def read_events(session: Session, *args, **kwargs):
                 column, order = sort[0], 'asc'
             query += f"ORDER BY {column} {order}"
 
-        if execute:
-            print(query)
-            return [Event(**rec._mapping) for rec in session.execute(query).all()]
-
-    return [Event(**rec.dict()) for rec in session.query(EventTable).all()]
+    return [Event(**rec._mapping) for rec in session.execute(query).all()]
 
 
 @check_token
 def read_my_events(user: int, session: Session):
-    return [Event(**rec.dict()) for rec in session.query(EventTable).filter(EventTable.owner == user).all()]
+    query = get_template()
+    query += f"""WHERE events."owner" = {user}"""
+    return [Event(**rec.dict()) for rec in session.execute(query).all()]
 
 
 def read_sets(session: Session):
@@ -234,3 +235,45 @@ def read_sets(session: Session):
                     event_count."event_count" desc
                 ,   event_count."@Id" asc
             """).all()]
+
+
+@check_token
+def like_dislike_event(id: int, action: str, session: Session):
+    session.execute(f"""
+        UPDATE
+            events
+        SET
+            "{action}" = "{action}" + 1   
+        WHERE
+            "id" = {id}
+    """)
+    return {'status': 'OK', 'id': id}
+
+
+@check_token
+def join_event(id: int, user: int, session: Session):
+    result = session.execute(f"""
+        WITH join_people AS (
+            UPDATE
+                events
+            SET
+                "members" = array_append("members", {user})
+            WHERE
+                "id" = {id} AND
+                "count_people" > array_length(members)
+            RETURNING
+                events."id"
+        )
+        SELECT
+            CASE
+                WHERE EXISTS(SELECT "id" from join_people)
+            THEN
+                TRUE
+            ELSE
+                FALSE
+            END
+    """).one()
+    if result:
+        return {'status': 'OK', 'id': id}
+    else:
+        return {'status': 'ERROR', 'id': id}
