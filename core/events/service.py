@@ -45,7 +45,7 @@ def get_template():
         ,   owner
         ,   tags
         ,   members
-        ,   (count_peple > array_length("members")) as "can_join"
+        ,   (array_length(members, 1) IS NULL OR count_people > array_length(members, 1)) as "can_join"
         FROM 
            events 
     """
@@ -243,7 +243,12 @@ def like_dislike_event(id: int, action: str, session: Session):
         UPDATE
             events
         SET
-            "{action}" = "{action}" + 1   
+            CASE 
+                WHEN "{action}" IS NOT NULL THEN
+                    "{action}" = "{action}" + 1  
+                ELSE
+                    "action" = 1
+            END 
         WHERE
             "id" = {id}
     """)
@@ -257,10 +262,15 @@ def join_event(id: int, user: int, session: Session):
             UPDATE
                 events
             SET
-                "members" = array_append("members", {user})
+                CASE
+                    WHEN "members" IS NOT NULL THEN
+                        "members" = array_append("members", {user})
+                    ELSE
+                        "memers" = ARRAY[{user}]::int[]
             WHERE
                 "id" = {id} AND
-                "count_people" > array_length(members)
+                (array_length("members", 1) IS NULL OR 
+                "count_people" > array_length("members", 1))
             RETURNING
                 events."id"
         )
