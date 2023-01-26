@@ -214,7 +214,11 @@ def read_user(user: str, session: Session):
         SELECT 
             id, username, name, surname, last_name, sex, email 
         FROM users WHERE username = '{user}'
-    """).one()
+    """).all()
+    if user:
+        user = user[0]
+    else:
+        raise HTTPException(status_code=404, detail="Not found")
     events = read_user_events(session, user.id)
     return UserWithEvents(events=events, **user._mapping)
     # return UserWithEvents(id=user.id, username=user.username, name=user.name, surname=user.surnevents=events, **)
@@ -237,9 +241,9 @@ def read_user_events(session: Session, user: int = None):
                 if rec.start_time > time:
                     owner_future.append(Event(**rec._mapping))
                 else:
-                    owner_past.extend(Event(**rec._mapping))
+                    owner_past.append(Event(**rec._mapping))
             else:
-                owner_past.extend(Event(**rec._mapping))
+                owner_past.append(Event(**rec._mapping))
         else:
             if rec.date > date:
                 member_future.append(Event(**rec._mapping))
@@ -247,9 +251,10 @@ def read_user_events(session: Session, user: int = None):
                 if rec.start_time > time:
                     member_future.append(Event(**rec._mapping))
                 else:
-                    member_past.extend(Event(**rec._mapping))
+                    member_past.append(Event(**rec._mapping))
             else:
-                member_past.extend(Event(**rec._mapping))
+                member_past.append(Event(**rec._mapping))
+
     return AllUserEvent(
         owner=UserEventTime(future_event=owner_future, past_event=owner_past),
         member=UserEventTime(future_event=member_future, past_event=member_past)
