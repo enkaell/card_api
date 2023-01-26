@@ -195,7 +195,7 @@ def read_events(session: Session, *args, **kwargs):
 def read_my_events(user: int, session: Session):
     query = get_template()
     query += f"""WHERE events."owner" = {user}"""
-    return [Event(**rec.dict()) for rec in session.execute(query).all()]
+    return [Event(**rec._mapping) for rec in session.execute(query).all()]
 
 
 def read_sets(session: Session):
