@@ -210,11 +210,18 @@ def read_my_events(user: int, session: Session):
 
 
 def read_user(user: str, session: Session):
-    user = session.execute(f"""
-        SELECT 
-            id, username, name, surname, last_name, sex, email 
-        FROM users WHERE username = '{user}'
-    """).all()
+    if isinstance(user, int):
+        user = session.execute(f"""
+            SELECT 
+                id, username, name, surname, last_name, sex, email  
+            FROM users WHERE id = '{user}'
+        """).all()
+    else:
+        user = session.execute(f"""
+            SELECT 
+                id, username, name, surname, last_name, sex, email 
+            FROM users WHERE username = '{user}'
+        """).all()
     if user:
         user = user[0]
     else:
