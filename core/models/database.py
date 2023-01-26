@@ -66,6 +66,7 @@ class EventTable(Base):
     likes = Column(Integer, default=0)
     dislikes = Column(Integer, default=0)
     members = Column(ARRAY(Integer), default=[])
+    comments = Column(ARRAY(String), default=[])
 
     def dict(self):
         return {
