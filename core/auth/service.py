@@ -99,11 +99,12 @@ def update_profile(user: int, update_user: UpdateUser, session: Session):
     update_user = update_user.dict()
     where_query = f"""id = '{user} '"""
     params_query = ''
-    for key in update_user:
-        if params_query:
+    keys = list(update_user.keys())
+    for i in range(len(keys)):
+        if update_user[keys[i]]:
+            params_query += f"""{keys[i]} = '{update_user[keys[i]]}'"""
+        if i != len(keys) - 1 and update_user[keys[i]]:
             params_query += ', '
-        if update_user[key]:
-            params_query += f"""{key} = '{update_user[key]}'"""
     session.execute(f"""
         UPDATE
             users
