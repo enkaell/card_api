@@ -238,16 +238,16 @@ def read_sets(session: Session):
 
 
 @check_token
-def like_dislike_event(id: int, action: str, session: Session):
+def like_dislike_event(user: int, id: int, action: str, session: Session):
     session.execute(f"""
         UPDATE
             events
         SET
-            CASE 
+            "{action}" =  CASE 
                 WHEN "{action}" IS NOT NULL THEN
-                    "{action}" = "{action}" + 1  
+                    "{action}" + 1  
                 ELSE
-                    "action" = 1
+                    1
             END 
         WHERE
             "id" = {id}
@@ -262,11 +262,13 @@ def join_event(id: int, user: int, session: Session):
             UPDATE
                 events
             SET
-                CASE
+                members = CASE
                     WHEN "members" IS NOT NULL THEN
-                        "members" = array_append("members", {user})
+                        array_append("members", {user})
                     ELSE
-                        "memers" = ARRAY[{user}]::int[]
+                        ARRAY[{user}]::int[]
+                end
+                    
             WHERE
                 "id" = {id} AND
                 (array_length("members", 1) IS NULL OR 
@@ -276,7 +278,7 @@ def join_event(id: int, user: int, session: Session):
         )
         SELECT
             CASE
-                WHERE EXISTS(SELECT "id" from join_people)
+                WHEN EXISTS(SELECT "id" from join_people)
             THEN
                 TRUE
             ELSE
