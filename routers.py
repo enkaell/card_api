@@ -8,9 +8,9 @@ from fastapi.security import OAuth2PasswordBearer
 # from fastapi.security import OAuth2PasswordRequestForm
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
 from core.schemas.schema import User, CreateUser, LoginUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag, \
-    Set, FindEvent
+    Set, FindEvent, UserWithEvents, AllUserEvent, FrontComment
 from core.events.service import add_event, read_events, read_my_events, change_event, delete_event, map_tags, read_sets, \
-    like_dislike_event, join_event
+    like_dislike_event, join_event, read_user, write_comment
 
 
 app = FastAPI()
@@ -44,7 +44,9 @@ async def get_profile(token: str = Depends(oauth2_scheme), session: Session = De
     return get_user_profile(token, session)
 
 
-# @router.get('/user_profile', response_model=)
+@router.get('/user', response_model=UserWithEvents, tags=['other user'])
+async def get_user_info(user: str, session: Session = Depends(get_session)):
+    return read_user(user, session)
 
 
 @router.post('/events/create', tags=['events'])
@@ -67,7 +69,7 @@ async def get_events(session: Session = Depends(get_session), id: int = None):
     return read_events(session, id=id)
 
 
-@router.get('/events/my', response_model=List[Event], tags=['events'])
+@router.get('/events/my', response_model=AllUserEvent, tags=['events'])
 async def get_my_events(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     return read_my_events(user=token, session=session)
 
@@ -100,6 +102,11 @@ async def dislike_event(id: int, token: str = Depends(oauth2_scheme), session: S
 @router.post('/join', tags=['events'])
 async def join(id: int, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     return join_event(user=token, id=id, session=session)
+
+
+@router.post('/comment', tags=['events'])
+async def comment(comment: FrontComment, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    return write_comment(user=token, comment=comment, session=session)
 
 
 app.include_router(router)

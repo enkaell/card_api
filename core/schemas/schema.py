@@ -85,8 +85,8 @@ class Event(BaseModel):
     icon_id: Optional[str]
     owner: int
     tags: Optional[List[int]]
-    likes: Optional[List[int]]
-    dislikes: Optional[List[int]]
+    likes: Optional[int]
+    dislikes: Optional[int]
     can_join: bool
 
 
@@ -110,3 +110,28 @@ class Set(BaseModel):
 class JoinEvent(BaseModel):
     id: int
 
+
+class UserEventTime(BaseModel):
+    future_event: List[Event]
+    past_event: List[Event]
+
+
+class AllUserEvent(BaseModel):
+    owner: UserEventTime
+    member: UserEventTime
+
+
+class UserWithEvents(BaseModel):
+    id: int
+    username: str
+    name: str
+    surname: str
+    last_name: str
+    sex: str
+    email: str
+    events: AllUserEvent
+
+
+class FrontComment(BaseModel):
+    event_id: int
+    comment: str

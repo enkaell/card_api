@@ -1,11 +1,13 @@
 import json
+import datetime
 from fastapi import HTTPException
 from core.auth import check_token
 from sqlalchemy.orm import Session
 from core.models.database import EventTable
 from sqlalchemy import select, delete, update
 from sqlalchemy.dialects.postgresql import insert
-from core.schemas.schema import Event, CreateEvent, UpdateEvent, DeleteEvent, Set
+from core.schemas.schema import Event, CreateEvent, UpdateEvent, DeleteEvent, Set, UserEventTime, UserWithEvents,\
+    AllUserEvent, FrontComment
 
 
 map_tags = {
@@ -31,8 +33,11 @@ map_tags = {
 }
 
 
-def get_template():
-    return """
+def get_template(user: int = None):
+    user_can_join = ''
+    if user:
+        user_can_join = f"""events.owner <> {user} and {user} not in (SELECT UNNEST(members)) and"""
+    return f"""
         SELECT 
             id
         ,   title
@@ -45,7 +50,15 @@ def get_template():
         ,   owner
         ,   tags
         ,   members
-        ,   (array_length(members, 1) IS NULL OR count_people > array_length(members, 1)) as "can_join"
+        ,   likes
+        ,   dislikes
+        ,   (
+                {user_can_join}
+                (
+                    array_length(members, 1) IS NULL 
+                    OR count_people > array_length(members, 1)
+                )
+            ) as "can_join"
         FROM 
            events 
     """
@@ -193,9 +206,54 @@ def read_events(session: Session, *args, **kwargs):
 
 @check_token
 def read_my_events(user: int, session: Session):
-    query = get_template()
-    query += f"""WHERE events."owner" = {user}"""
-    return [Event(**rec._mapping) for rec in session.execute(query).all()]
+    return read_user_events(session, user)
+
+
+def read_user(user: str, session: Session):
+    user = session.execute(f"""
+        SELECT 
+            id, username, name, surname, last_name, sex, email 
+        FROM users WHERE username = '{user}'
+    """).one()
+    events = read_user_events(session, user.id)
+    return UserWithEvents(events=events, **user._mapping)
+    # return UserWithEvents(id=user.id, username=user.username, name=user.name, surname=user.surnevents=events, **)
+
+
+def read_user_events(session: Session, user: int = None):
+    date, time = str(datetime.datetime.now()).split(' ')
+    query = get_template(user)
+    query += f"""WHERE events."owner" = {user} or {user} = ANY(events."members")"""
+    rs = session.execute(query).all()
+    owner_future = []
+    owner_past = []
+    member_future = []
+    member_past = []
+    for rec in rs:
+        if rec.owner == user:
+            if rec.date > date:
+                owner_future.append(Event(**rec._mapping))
+            elif rec.date == date:
+                if rec.start_time > time:
+                    owner_future.append(Event(**rec._mapping))
+                else:
+                    owner_past.extend(Event(**rec._mapping))
+            else:
+                owner_past.extend(Event(**rec._mapping))
+        else:
+            if rec.date > date:
+                member_future.append(Event(**rec._mapping))
+            elif rec.date == date:
+                if rec.start_time > time:
+                    member_future.append(Event(**rec._mapping))
+                else:
+                    member_past.extend(Event(**rec._mapping))
+            else:
+                member_past.extend(Event(**rec._mapping))
+    return AllUserEvent(
+        owner=UserEventTime(future_event=owner_future, past_event=owner_past),
+        member=UserEventTime(future_event=member_future, past_event=member_past)
+    )
 
 
 def read_sets(session: Session):
@@ -289,3 +347,24 @@ def join_event(id: int, user: int, session: Session):
         return {'status': 'OK', 'id': id}
     else:
         return {'status': 'ERROR', 'id': id}
+
+
+@check_token
+def write_comment(user: int, comment: FrontComment, session: Session):
+    user = session.execute(f"""
+        SELECT username FROM users WHERE id = '{user}'
+    """).one()
+
+    session.execute(f"""
+        UPDATE
+            events
+        SET
+            comments = CASE
+                            WHEN comments is null then
+                                ARRAY[ARRAY[{str(user.username)}, {str(comment.comment)}]]
+                            ELSE
+                                comments = array_cat(comments, ARRAY[ARRAY[{str(user.username)}, {str(comment.comment)}]])
+        WHERE
+            id = {comment.event_id}
+    """)
+    return {'status': 'OK', 'event_id': id}
