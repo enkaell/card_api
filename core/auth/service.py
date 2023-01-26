@@ -7,8 +7,7 @@ from email_validate import validate
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from core.models.database import UserTable
-from core.schemas.schema import User, CreateUser
-from fastapi.security import OAuth2PasswordRequestForm
+from core.schemas.schema import User, CreateUser, LoginUser
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -36,10 +35,10 @@ def validate_password(user: CreateUser, password: str):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
 
-def user_login(form_data: OAuth2PasswordRequestForm, session: Session):
+def user_login(user_login: LoginUser, session: Session):
     if user := session.query(UserTable).filter(
-            or_(UserTable.username == form_data.username, UserTable.username == form_data.username)).one_or_none():
-        validate_password(user, form_data.password)
+            or_(UserTable.username == user_login.username, UserTable.username == user_login.username)).one_or_none():
+        validate_password(user, user_login.password)
         token = create_token(data={'sub': user.username}),
         refresh_token = create_token(data={'sub': user.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES * 7)
         user.refresh_token = refresh_token

@@ -29,6 +29,11 @@ class User(BaseModel):
     email: str
 
 
+class LoginUser(BaseModel):
+    username: str
+    password: str
+
+
 class OrgUser(BaseModel):
     id: Optional[int]
     org_id: Optional[int]
