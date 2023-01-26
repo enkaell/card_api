@@ -5,7 +5,7 @@ from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
 from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.security import OAuth2PasswordRequestForm
+# from fastapi.security import OAuth2PasswordRequestForm
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
 from core.schemas.schema import User, CreateUser, LoginUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag, \
     Set, FindEvent
@@ -19,8 +19,8 @@ router = APIRouter()
 
 
 @router.post("/login", tags=['account'])
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
-    auth = user_login(LoginUser(username=form_data.username, password=form_data.password), session)
+async def login(form_data: LoginUser, session: Session = Depends(get_session)):
+    auth = user_login(form_data, session)
     auth.update({"message": "Successful login"})
     profile = get_user_profile(auth.get('access_token'), session)
     auth.update(**profile.dict())
