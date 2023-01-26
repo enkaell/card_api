@@ -5,7 +5,7 @@ from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
 from core.models.database import get_session
 from fastapi.security import OAuth2PasswordBearer
-# from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from core.auth.service import validate_create_user, user_login, get_user_profile, remove_token
 from core.schemas.schema import User, CreateUser, LoginUser, Event, CreateEvent, UpdateEvent, DeleteEvent, FrontTag, \
     Set, FindEvent
@@ -19,8 +19,8 @@ router = APIRouter()
 
 
 @router.post("/login", tags=['account'])
-async def login(form_data: LoginUser, session: Session = Depends(get_session)):
-    auth = user_login(form_data, session)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+    auth = user_login(LoginUser(username=form_data.username, password=form_data.password), session)
     auth.update({"message": "Successful login"})
     profile = get_user_profile(auth.get('access_token'), session)
     auth.update(**profile.dict())
@@ -42,6 +42,9 @@ async def logout(token: str = Depends(oauth2_scheme), session: Session = Depends
 @router.get("/profile", response_model=User, tags=['account'])
 async def get_profile(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     return get_user_profile(token, session)
+
+
+# @router.get('/user_profile', response_model=)
 
 
 @router.post('/events/create', tags=['events'])
@@ -86,12 +89,12 @@ async def get_sets(session: Session = Depends(get_session)):
 
 @router.post('/like', tags=['events'])
 async def like_event(id: int, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
-    return like_dislike_event(user=token, id=id, action='like', session=session)
+    return like_dislike_event(user=token, id=id, action='likes', session=session)
 
 
 @router.post('/dislike', tags=['events'])
 async def dislike_event(id: int, token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
-    return like_dislike_event(user=token, id=id, action='dislike', session=session)
+    return like_dislike_event(user=token, id=id, action='dislikes', session=session)
 
 
 @router.post('/join', tags=['events'])
