@@ -97,7 +97,7 @@ def remove_token(token: str, session: Session):
 @check_token
 def update_profile(user: int, update_user: UpdateUser, session: Session):
     update_user = update_user.dict()
-    where_query = f"""id = '{user} '"""
+    where_query = f"""id = '{user}'"""
     params = []
     for key in update_user:
         if update_user[key]:
@@ -105,7 +105,7 @@ def update_profile(user: int, update_user: UpdateUser, session: Session):
     params_query = ''
     for i in range(len(params)):
         params_query += params[i]
-        if i != len(params[-1]):
+        if i != len(params) - 1:
             params_query += ', '
 
     session.execute(f"""
