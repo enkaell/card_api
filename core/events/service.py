@@ -52,6 +52,7 @@ def get_template(user: int = None):
         ,   members
         ,   likes
         ,   dislikes
+        ,   comments
         ,   (
                 {user_can_join}
                 (

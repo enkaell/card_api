@@ -97,6 +97,7 @@ class Event(BaseModel):
     likes: Optional[int]
     dislikes: Optional[int]
     can_join: bool
+    comments: Optional[List[List[str]]]
 
 
 class FindEvent(BaseModel):
