@@ -115,7 +115,7 @@ def read_events(session: Session, *args, **kwargs):
     id = kwargs.get('id')
     query = get_template()
     if id:
-        query += f"""WHERE events."id" = {id}"""
+        query += f"""WHERE events."id" = {id} ORDER BY events."date" desc, events."start_time" desc"""
         result = [Event(**rec._mapping) for rec in session.execute(query).all()]
         if result:
             return result
@@ -202,6 +202,9 @@ def read_events(session: Session, *args, **kwargs):
                 column, order = sort[0], 'asc'
             query += f"ORDER BY {column} {order}"
 
+        else:
+            query += f"ORDER BY events."date" desc, events."start_time" desc"
+
     return [Event(**rec._mapping) for rec in session.execute(query).all()]
 
 
@@ -235,7 +238,10 @@ def read_user(user: str, session: Session):
 def read_user_events(session: Session, user: int = None):
     date, time = str(datetime.datetime.now()).split(' ')
     query = get_template(user)
-    query += f"""WHERE events."owner" = {user} or {user} = ANY(events."members")"""
+    query += f"""
+        WHERE events."owner" = {user} or {user} = ANY(events."members") 
+        ORDER BY events."date" desc, events."start_time" desc
+    """
     rs = session.execute(query).all()
     owner_future = []
     owner_past = []
