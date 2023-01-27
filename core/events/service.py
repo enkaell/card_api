@@ -203,7 +203,7 @@ def read_events(session: Session, *args, **kwargs):
             query += f"ORDER BY {column} {order}"
 
         else:
-            query += f"ORDER BY events."date" desc, events."start_time" desc"
+            query += f"""ORDER BY events."date" desc, events."start_time" desc"""
 
     return [Event(**rec._mapping) for rec in session.execute(query).all()]
 
