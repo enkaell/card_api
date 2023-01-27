@@ -211,7 +211,7 @@ def read_my_events(user: int, session: Session):
 
 
 def read_user(user: str, session: Session):
-    if isinstance(user, int):
+    if user.isdigit():
         user = session.execute(f"""
             SELECT 
                 id, username, name, surname, last_name, sex, email  
