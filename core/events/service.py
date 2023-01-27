@@ -214,13 +214,13 @@ def read_user(user: str, session: Session):
     if user.isdigit():
         user = session.execute(f"""
             SELECT 
-                id, username, name, surname, last_name, sex, email  
+                id, username, name, surname, last_name, sex, email, icon_id  
             FROM users WHERE id = '{user}'
         """).all()
     else:
         user = session.execute(f"""
             SELECT 
-                id, username, name, surname, last_name, sex, email 
+                id, username, name, surname, last_name, sex, email, icon_id
             FROM users WHERE username = '{user}'
         """).all()
     if user:
