@@ -1,8 +1,8 @@
-# Startup config
- Сначала вводим команды
+# Study project on FastAPI
+ Command input
  
- ## Собрать контейнер (только для первого запуска и в директории проекта)
+ ## Build container (first time and in project directory)
  docker build . -t 'api'
   
-  ## Поднять контейнер (из любого места)
+  ## Run container (from any path)
   docker run -d 'api'
